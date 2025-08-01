@@ -5,11 +5,11 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./src/*"]
-      // "@assets/*": ["./src/assets/*"],
-      // "@ui/*": ["./src/components/ui/*"],
-      // "@img/*": ["./src/assets/images/*"],
-      // "@components/*": ["./src/components/*"]
+      "@/*": ["./src/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@img/*": ["./src/assets/images/*"],
+      "@components/*": ["./src/components/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
