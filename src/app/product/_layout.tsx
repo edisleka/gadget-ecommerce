@@ -11,6 +11,7 @@ export default function ProductLayout() {
         name='[slug]'
         options={{
           headerShown: true,
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name='arrow-back' size={24} color='black' />

@@ -9,7 +9,8 @@
       "@assets/*": ["./src/assets/*"],
       "@ui/*": ["./src/components/ui/*"],
       "@img/*": ["./src/assets/images/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@types/*": ["./src/types/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

@@ -10,6 +10,9 @@ export const PRODUCTS: Product[] = [
       require('../assets/images/mac-book-1.jpg'),
       require('../assets/images/mac-book-2.jpg'),
       require('../assets/images/mac-book-3.jpg'),
+      require('../assets/images/mac-book-1.jpg'),
+      require('../assets/images/mac-book-2.jpg'),
+      require('../assets/images/mac-book-3.jpg'),
     ],
     price: 899.99,
     category: {
