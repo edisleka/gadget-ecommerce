@@ -1,19 +1,29 @@
+import { useGetCategoryAndProducts } from '@/api/api'
 import ProductListItem from '@/components/ProductListItem'
-import { CATEGORIES } from '@/constants/categories'
-import { PRODUCTS } from '@/constants/products'
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router'
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 
 export default function CategoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
 
-  const category = CATEGORIES.find((category) => category.slug === slug)
+  const { data, isLoading, error } = useGetCategoryAndProducts(slug)
 
-  if (!category) {
+  if (isLoading) return <ActivityIndicator />
+
+  if (error || !data) return <Text>Error: {error?.message}</Text>
+
+  if (!data.category || !data.products) {
     return <Redirect href={'/404' as any} />
   }
 
-  const products = PRODUCTS.filter((product) => product.category.slug === slug)
+  const { category, products } = data
 
   return (
     <View style={styles.container}>

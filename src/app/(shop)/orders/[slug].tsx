@@ -1,33 +1,55 @@
-import { ORDERS } from '@/constants/orders'
-import { Redirect, Stack, useLocalSearchParams } from 'expo-router'
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native'
+import { useGetMyOrder } from '@/api/api'
+import { formatDate } from 'date-fns'
+import { Stack, useLocalSearchParams } from 'expo-router'
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 
 export default function OrderDetailsScreen() {
-  const { slug } = useLocalSearchParams()
+  const { slug } = useLocalSearchParams<{ slug: string }>()
 
-  const order = ORDERS.find((order) => order.slug === slug)
+  const { data: order, isLoading, error } = useGetMyOrder(slug)
 
-  if (!order) {
-    return <Redirect href={'/404' as any} />
+  if (isLoading) return <ActivityIndicator />
+
+  if (error || !order) {
+    return <Text>Error: {error?.message}</Text>
   }
+
+  const orderItems = order.order_items.map((orderItem: any) => {
+    return {
+      id: orderItem.id,
+      title: orderItem.products.title,
+      price: orderItem.products.price,
+      heroImage: orderItem.products.heroImage,
+      quantity: orderItem.quantity,
+    }
+  })
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: `${order.item} - Order Details` }} />
+      <Stack.Screen options={{ title: `${order.slug} - Order Details` }} />
 
-      <Text style={styles.item}>{order.item}</Text>
-      <Text style={styles.details}>{order.details}</Text>
+      <Text style={styles.item}>{order.slug}</Text>
+      <Text style={styles.details}>{order.description}</Text>
       <View style={[styles.statusBadge, styles[`statusBadge_${order.status}`]]}>
         <Text style={styles.statusText}>{order.status}</Text>
       </View>
-      <Text style={styles.date}>{order.date}</Text>
+      <Text style={styles.date}>
+        {formatDate(new Date(order.created_at), 'MMM dd, yyyy')}
+      </Text>
       <Text style={styles.itemsTitle}>Items Ordered:</Text>
       <FlatList
-        data={order.items}
+        data={orderItems}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.orderItem}>
-            <Image source={item.heroImage} style={styles.heroImage} />
+            <Image source={{ uri: item.heroImage }} style={styles.heroImage} />
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>{item.title}</Text>
               <Text style={styles.itemPrice}>Price:${item.price}</Text>

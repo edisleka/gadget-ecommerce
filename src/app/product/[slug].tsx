@@ -1,8 +1,9 @@
-import { PRODUCTS } from '@/constants/products'
+import { useGetProduct } from '@/api/api'
 import { useCartStore } from '@/store/cartStore'
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   StyleSheet,
@@ -15,11 +16,16 @@ import { useToast } from 'react-native-toast-notifications'
 export default function ProductDetailsScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
   const toast = useToast()
+  const { data: product, isLoading, error } = useGetProduct(slug)
   const { items, addItem, incrementItem, decrementItem } = useCartStore()
-  const product = PRODUCTS.find((p) => p.slug === slug)
   const cartItem = items.find((item) => item.id === product?.id)
   const initialQuantity = cartItem ? cartItem.quantity : 0
   const [quantity, setQuantity] = useState(initialQuantity)
+
+  if (isLoading) return <ActivityIndicator />
+
+  if (error) return <Text>Error: {error.message}</Text>
+
   if (!product) return <Redirect href={'/404' as any} />
 
   const decreaseQuantity = () => {
@@ -45,9 +51,10 @@ export default function ProductDetailsScreen() {
     addItem({
       id: product.id,
       title: product.title,
-      image: product.heroImage,
+      heroImage: product.heroImage ?? '',
       price: product.price,
       quantity: quantity,
+      maxQuantity: product.maxQuantity,
     })
     toast.show('Item added to cart', {
       type: 'success',
@@ -61,7 +68,10 @@ export default function ProductDetailsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: product.title }} />
-      <Image source={product.heroImage} style={styles.heroImage} />
+      <Image
+        source={{ uri: product.heroImage ?? undefined }}
+        style={styles.heroImage}
+      />
       <View style={{ padding: 16, flex: 1 }}>
         <Text style={styles.title}>Title: {product.title}</Text>
         <Text style={styles.slug}>Slug: {product.slug}</Text>
@@ -73,7 +83,7 @@ export default function ProductDetailsScreen() {
           data={product.imagesUrl}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <Image source={item} style={styles.image} />
+            <Image source={{ uri: item }} style={styles.image} />
           )}
           horizontal
           contentContainerStyle={styles.imagesContainer}

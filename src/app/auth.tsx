@@ -1,6 +1,8 @@
+import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import {
+  Alert,
   ImageBackground,
   StyleSheet,
   Text,
@@ -8,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { Toast } from 'react-native-toast-notifications'
 import * as z from 'zod'
 
 const formSchema = z.object({
@@ -17,6 +20,7 @@ const formSchema = z.object({
         ? 'Email is required'
         : 'Invalid email address',
   }),
+  // email: z.email(),
   password: z.string().min(8, {
     error: (issue) =>
       issue.input === undefined || issue.input === ''
@@ -34,12 +38,35 @@ export default function Auth() {
     },
   })
 
-  const signIn = (data: z.infer<typeof formSchema>) => {
-    console.log(data)
+  const signIn = async (data: z.infer<typeof formSchema>) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      Alert.alert('Error', error.message)
+    } else {
+      Toast.show('Signed in successfully', {
+        type: 'success',
+        placement: 'top',
+        duration: 1500,
+      })
+    }
   }
 
-  const signUp = (data: z.infer<typeof formSchema>) => {
-    console.log(data)
+  const signUp = async (data: z.infer<typeof formSchema>) => {
+    const { error } = await supabase.auth.signUp(data)
+
+    if (error) {
+      Alert.alert('Error custom in Sign Up', error.message)
+    } else {
+      Toast.show('Signed up successfully', {
+        type: 'success',
+        placement: 'top',
+        duration: 1500,
+      })
+    }
   }
 
   return (

@@ -1,7 +1,7 @@
+import { useCreateOrder, useCreateOrderItem } from '@/api/api'
 import { useCartStore } from '@/store/cartStore'
 import { StatusBar } from 'expo-status-bar'
 import {
-  Alert,
   FlatList,
   Image,
   Platform,
@@ -14,9 +14,10 @@ import {
 type CartItemType = {
   id: number
   title: string
-  image: any
+  heroImage: string
   price: number
   quantity: number
+  maxQuantity: number
 }
 
 interface CartItemProps {
@@ -34,7 +35,7 @@ const CartItem = ({
 }: CartItemProps) => {
   return (
     <View style={styles.cartItem}>
-      <Image source={item.image} style={styles.itemImage} />
+      <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
         <Text style={styles.itemPrice}>${item.price}</Text>
@@ -66,14 +67,46 @@ const CartItem = ({
 }
 
 export default function Cart() {
-  const { items, removeItem, incrementItem, decrementItem, getTotalPrice } =
-    useCartStore()
+  const {
+    items,
+    removeItem,
+    incrementItem,
+    decrementItem,
+    getTotalPrice,
+    resetCart,
+  } = useCartStore()
 
-  const handleCheckout = () => {
-    Alert.alert('Proceed to Checkout', `Total Price: $${getTotalPrice()}`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Checkout', onPress: () => console.log('checkout') },
-    ])
+  const { mutateAsync: createSupabaseOrder } = useCreateOrder()
+  const { mutateAsync: createSupabaseOrderItem } = useCreateOrderItem()
+
+  const handleCheckout = async () => {
+    const totalPrice = parseFloat(getTotalPrice())
+
+    try {
+      await createSupabaseOrder(
+        { totalPrice },
+        {
+          onSuccess: (data) => {
+            createSupabaseOrderItem(
+              items.map((item) => ({
+                orderId: data.id,
+                productId: item.id,
+                quantity: item.quantity,
+              })),
+              {
+                onSuccess: () => {
+                  alert('Order created successfully')
+                  resetCart()
+                },
+              }
+            )
+          },
+        }
+      )
+    } catch (error) {
+      console.log(error)
+      alert('An error occurred while creating order')
+    }
   }
 
   return (
